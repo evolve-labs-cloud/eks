@@ -44,8 +44,9 @@ variable "vpc_additional_cidrs" {
 
 variable "db_ingress_rules" {
   type = list(object({
-    port     = number
-    protocol = string
+    port        = number
+    protocol    = string
+    description = string
   }))
   description = "Dynamic ingress NACLS rules to database subnet"
 
