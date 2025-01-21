@@ -26,6 +26,7 @@ resource "aws_eks_cluster" "main" {
   zonal_shift_config {
     enabled = true
   }
+
   tags = {
     "kubernetes.io/cluster/${var.prefix}" = "shared"
   }
