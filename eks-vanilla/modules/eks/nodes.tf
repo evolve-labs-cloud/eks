@@ -14,14 +14,18 @@ resource "aws_eks_node_group" "main" {
     max_size     = lookup(var.auto_scale_options, "max")
     min_size     = lookup(var.auto_scale_options, "min")
   }
+  #MIScCELANEOUS
+  capacity_type = var.nodes_capacity_type
+  ami_type      = "BOTTLEROCKET_X86_64"
 
   labels = {
-    "ingress/ready" = "true"
+    "capacity/arch" = "x86_64"
+    "capacity/os"   = "AMAZON_LINUX"
+    "capacity/type" = "${var.nodes_capacity_type}"
   }
 
   tags = {
     "kubernetes.io/cluster/${var.prefix}" = "owned"
-    Name                                  = "${var.prefix}-eks-node-group"
   }
 
   depends_on = [

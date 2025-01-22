@@ -35,6 +35,11 @@ variable "auto_scale_options" {
   })
 }
 
+variable "nodes_capacity_type" {
+  description = "Nodes Capacity Type"
+  type        = string
+}
+
 variable "addons" {
   description = "Addons"
   type = map(object({

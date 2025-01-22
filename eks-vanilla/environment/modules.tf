@@ -16,6 +16,7 @@ module "eks" {
   remote_state_key      = var.remote_state_key
   region                = var.region
   eks_access_entry_type = var.eks_access_entry_type
+  nodes_capacity_type   = var.nodes_capacity_type
 }
 
 module "iam" {
