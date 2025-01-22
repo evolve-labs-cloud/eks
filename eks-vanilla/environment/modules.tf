@@ -7,16 +7,14 @@ module "eks" {
   eks_cluster_role      = module.iam.eks_cluster_role_arn
   eks_nodes_role        = module.iam.eks_nodes_role_arn
   kms_key_arn           = module.kms.kms_key_arn
-  nodes_instance_sizes  = var.nodes_instance_sizes
   pods_subnets_ids      = flatten(local.pod_subnet_ids)
-  auto_scale_options    = var.auto_scale_options
   addons                = var.addons
   ingress_rules         = var.ingress_rules
   remote_state_bucket   = var.remote_state_bucket
   remote_state_key      = var.remote_state_key
   region                = var.region
   eks_access_entry_type = var.eks_access_entry_type
-  nodes_capacity_type   = var.nodes_capacity_type
+  nodes_groups          = var.nodes_groups
 }
 
 module "iam" {

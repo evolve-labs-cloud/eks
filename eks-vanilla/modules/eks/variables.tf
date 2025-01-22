@@ -27,28 +27,10 @@ variable "eks_nodes_role" {
   type        = string
 }
 
-variable "nodes_instance_sizes" {
-  description = "Node Instance Sizes"
-  type        = list(string)
-}
 
 variable "pods_subnets_ids" {
   description = "Pods Subnets IDs"
   type        = list(string)
-}
-
-variable "auto_scale_options" {
-  description = "Auto Scale Options"
-  type = object({
-    min     = number
-    max     = number
-    desired = number
-  })
-}
-
-variable "nodes_capacity_type" {
-  description = "Nodes Capacity Type"
-  type        = string
 }
 
 
@@ -85,3 +67,21 @@ variable "eks_access_entry_type" {
 }
 
 
+variable "nodes_groups" {
+  type = map(object({
+    node_group_name = string
+    instance_types  = list(string)
+    scaling_config = object({
+      desired_size = number
+      max_size     = number
+      min_size     = number
+    })
+    capacity_type = string
+    ami_type      = string
+    labels = object({
+      capacity_arch = string
+      capacity_os   = string
+      capacity_type = string
+    })
+  }))
+}
