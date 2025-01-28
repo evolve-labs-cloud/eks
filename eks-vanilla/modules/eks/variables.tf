@@ -22,15 +22,14 @@ variable "kms_key_arn" {
   type        = string
 }
 
-variable "eks_nodes_role" {
-  description = "EKS Nodes Role ARN"
-  type        = string
-}
-
 
 variable "pods_subnets_ids" {
   description = "Pods Subnets IDs"
   type        = list(string)
+}
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
 }
 
 
@@ -61,16 +60,11 @@ variable "region" {
   type        = string
 }
 
-variable "eks_access_entry_type" {
-  description = "EKS access entry type"
-  type        = string
-}
-
-
-variable "nodes_groups" {
+variable "node_groups" {
   type = map(object({
-    node_group_name = string
-    instance_types  = list(string)
+    node_group_name   = string
+    access_entry_type = string
+    instance_types    = list(string)
     scaling_config = object({
       desired_size = number
       max_size     = number
@@ -83,5 +77,12 @@ variable "nodes_groups" {
       capacity_os   = string
       capacity_type = string
     })
+  }))
+}
+
+variable "fargate_node_groups" {
+  type = map(object({
+    fargate_profile_name = string
+    access_entry_type    = string
   }))
 }

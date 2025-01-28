@@ -28,6 +28,8 @@ resource "aws_eks_cluster" "main" {
   }
 
   tags = {
-    "kubernetes.io/cluster/${var.prefix}" = "shared"
+    "kubernetes.io/cluster/${var.prefix}-eks-cluster" = "shared"
   }
+
+  depends_on = [aws_iam_role.eks_fargate_role, aws_iam_role.eks_nodes_role]
 }
