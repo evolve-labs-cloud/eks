@@ -43,3 +43,12 @@ resource "aws_iam_role_policy_attachment" "nodes_policies" {
   role       = aws_iam_role.eks_nodes_role[each.value.node_group].name
   policy_arn = each.value.policy_arn
 }
+
+
+resource "aws_iam_instance_profile" "nodes" {
+  for_each = {
+    for key, value in var.node_groups : key => value if value.access_entry_type == "EC2_LINUX"
+  }
+  name = "eks-nodes-${each.key}"
+  role = aws_iam_role.eks_nodes_role[each.key].name
+}

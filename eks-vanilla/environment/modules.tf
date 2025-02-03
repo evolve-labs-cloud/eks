@@ -38,13 +38,30 @@ module "kms" {
   prefix = var.prefix
 }
 
+module "karpenter" {
+  source     = "../modules/karpenter"
+  depends_on = [module.eks]
+
+  prefix              = var.prefix
+  cluster_endpoint    = module.eks.cluster_endpoint
+  karpenter_capacity  = var.karpenter_capacity
+  instance_profile    = local.instance_profile_name
+  security_group_id   = module.eks.security_group_id
+  subnet_ids          = flatten(local.pod_subnet_ids)
+  availability_zones  = data.terraform_remote_state.infra.outputs.availability_zones
+  iam_open_id_connect = module.iam.iam_open_id_connect
+}
+
 #get subnets for pods
 data "aws_subnet" "private_subnets" {
   for_each = toset(data.terraform_remote_state.infra.outputs.private_subnets)
   id       = each.value
 }
 
+
 locals {
+  instance_profile_name = try(tostring(element(module.eks.instance_profile, 0)), "")
+
   pod_subnet_ids = [
     for subnet_id, subnet in data.aws_subnet.private_subnets : subnet_id
     if startswith(subnet.cidr_block, "100.")

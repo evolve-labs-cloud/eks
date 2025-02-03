@@ -16,3 +16,6 @@ output "database_subnets" {
 output "vpc_name" {
   value = module.networking.vpc_name
 }
+output "availability_zones" {
+  value = module.networking.availability_zones
+}

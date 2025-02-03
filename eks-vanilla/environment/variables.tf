@@ -83,3 +83,15 @@ variable "fargate_node_groups" {
     access_entry_type    = string
   }))
 }
+
+variable "karpenter_capacity" {
+  type = map(object({
+    name            = string
+    workload        = string
+    ami_family      = string
+    ami_ssm         = string
+    instance_family = list(string)
+    instance_sizes  = list(string)
+    capacity_type   = list(string)
+  }))
+}
