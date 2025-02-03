@@ -11,7 +11,7 @@ metadata:
   name: chip
   namespace: chip
 spec:
-  replicas: 100
+  replicas: 10
   selector:
     matchLabels:
       app: chip
@@ -24,7 +24,7 @@ spec:
     spec:
 
       nodeSelector:
-        karpenter.sh/nodepool: evolvelabs-capacity 
+        karpenter.sh/nodepool: soft 
 
       topologySpreadConstraints:
       - maxSkew: 1

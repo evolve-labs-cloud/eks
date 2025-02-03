@@ -21,13 +21,12 @@ module "iam" {
   source = "../modules/iam"
 
   prefix               = var.prefix
-  eks_cluster_name     = var.prefix
   eks_cluster_identity = module.eks.eks_cluster_identity
 }
 
 module "helm" {
-  source     = "../modules/helm"
   depends_on = [module.eks]
+  source     = "../modules/helm"
 
   helm_charts = var.helm_charts
 }
@@ -39,17 +38,19 @@ module "kms" {
 }
 
 module "karpenter" {
-  source     = "../modules/karpenter"
-  depends_on = [module.eks]
+  # depends_on = [module.eks, module.iam]
+  source = "../modules/karpenter"
 
-  prefix              = var.prefix
-  cluster_endpoint    = module.eks.cluster_endpoint
-  karpenter_capacity  = var.karpenter_capacity
-  instance_profile    = local.instance_profile_name
-  security_group_id   = module.eks.security_group_id
-  subnet_ids          = flatten(local.pod_subnet_ids)
-  availability_zones  = data.terraform_remote_state.infra.outputs.availability_zones
-  iam_open_id_connect = module.iam.iam_open_id_connect
+  prefix                        = var.prefix
+  cluster_endpoint              = module.eks.cluster_endpoint
+  karpenter_capacity            = var.karpenter_capacity
+  instance_profile              = local.instance_profile_name
+  security_group_id             = module.eks.security_group_id
+  subnet_ids                    = flatten(local.pod_subnet_ids)
+  availability_zones            = data.terraform_remote_state.infra.outputs.availability_zones
+  iam_open_id_connect           = module.iam.iam_open_id_connect
+  cluster_token                 = module.eks.cluster_token
+  cluster_certificate_authority = module.eks.cluster_certificate_authority
 }
 
 #get subnets for pods

@@ -16,7 +16,7 @@ resource "helm_release" "karpenter" {
 
   set {
     name  = "settings.clusterName"
-    value = var.prefix
+    value = "${var.prefix}-eks-cluster"
   }
 
   set {

@@ -3,3 +3,5 @@ data "aws_ssm_parameter" "karpenter_ami" {
 
   name = each.value.ami_ssm
 }
+
+data "aws_caller_identity" "current" {}

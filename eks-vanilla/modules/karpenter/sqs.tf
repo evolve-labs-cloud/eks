@@ -1,5 +1,5 @@
 resource "aws_sqs_queue" "karpenter" {
-  name                       = format("%s-karpenter", var.prefix)
+  name                       = "sqs-${var.prefix}-karpenter"
   delay_seconds              = 0
   message_retention_seconds  = 86400
   receive_wait_time_seconds  = 10

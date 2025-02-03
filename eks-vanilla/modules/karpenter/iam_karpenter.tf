@@ -1,3 +1,8 @@
+resource "aws_iam_role" "karpenter" {
+  assume_role_policy = data.aws_iam_policy_document.karpenter.json
+  name               = format("%s-karpenter", var.prefix)
+}
+
 data "aws_iam_policy_document" "karpenter" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -9,12 +14,6 @@ data "aws_iam_policy_document" "karpenter" {
     }
   }
 }
-
-resource "aws_iam_role" "karpenter" {
-  assume_role_policy = data.aws_iam_policy_document.karpenter.json
-  name               = format("%s-karpenter", var.prefix)
-}
-
 
 data "aws_iam_policy_document" "karpenter_policy" {
   version = "2012-10-17"
@@ -42,7 +41,16 @@ data "aws_iam_policy_document" "karpenter_policy" {
       "ec2:DeleteLaunchTemplate",
       "ssm:GetParameter",
       "iam:PassRole",
-      "sqs:*"
+      "sqs:*",
+      "iam:GetInstanceProfile",
+      "iam:CreateInstanceProfile",
+      "iam:DeleteInstanceProfile",
+      "iam:AddRoleToInstanceProfile",
+      "iam:RemoveRoleFromInstanceProfile",
+      "iam:ListInstanceProfilesForRole",
+      "eks:CreateNode",
+      "eks:UpdateNode",
+      "eks:DeleteNode"
     ]
 
     resources = [

@@ -8,8 +8,5 @@ variable "eks_cluster_identity" {
   type        = string
 }
 
-variable "eks_cluster_name" {
-  description = "value of the EKS cluster name"
-  type        = string
-}
+
 

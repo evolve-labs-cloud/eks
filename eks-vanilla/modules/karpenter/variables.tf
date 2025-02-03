@@ -3,9 +3,17 @@ variable "prefix" {
   type        = string
 }
 
-
 variable "cluster_endpoint" {
   description = "value of the cluster endpoint"
+  type        = string
+}
+variable "cluster_token" {
+  description = "value of the cluster token"
+  type        = string
+}
+
+variable "cluster_certificate_authority" {
+  description = "value of the cluster certificate authority"
   type        = string
 }
 
