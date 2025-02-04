@@ -1,0 +1,174 @@
+region      = "us-east-1"
+prefix      = ""
+vertical_id = ""
+
+#Remote State Config
+remote_state_bucket = ""
+remote_state_key    = ""
+
+k8s_version = "1.31"
+
+karpenter_capacity = {
+  "soft" = {
+    name            = "soft"
+    workload        = "soft"
+    ami_family      = "AL2023"
+    ami_ssm         = "/aws/service/eks/optimized-ami/1.31/amazon-linux-2023/x86_64/standard/recommended/image_id"
+    instance_family = ["t3", "t3a"]
+    instance_sizes  = ["medium", "large"]
+    capacity_type   = ["spot"]
+  }
+}
+
+#Node Groups Config
+node_groups = {
+  "evolvelabs-spot" = {
+    node_group_name   = "evolvelabs-spot"
+    access_entry_type = "EC2_LINUX"
+    instance_types    = ["t3.medium", "t3.large"]
+
+    scaling_config = {
+      desired_size = 2
+      max_size     = 2
+      min_size     = 2
+    }
+    capacity_type = "SPOT"
+    ami_type      = "BOTTLEROCKET_x86_64"
+
+    labels = {
+      capacity_arch = "x86_64"
+      capacity_os   = "BOOTTLE_ROCKET"
+      capacity_type = "SPOT"
+    }
+  }
+}
+
+fargate_node_groups = {
+  # "evolve-labs-fargate" = {
+  #   fargate_profile_name = "evolve-labs-fargate"
+  #   access_entry_type    = "FARGATE_LINUX"
+  # }
+}
+
+#Security Groups Config
+ingress_rules = {
+  node_ports = {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 30000
+    to_port     = 32768
+    protocol    = "tcp"
+    type        = "ingress"
+    description = "NodePort Range"
+  },
+
+  coredns_udp = {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    type        = "ingress"
+    description = "DNS"
+  },
+  coredns_tcp = {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    type        = "ingress"
+    description = "DNS"
+  },
+  port80 = {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    type        = "ingress"
+    description = "DNS"
+  },
+  port8080 = {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    type        = "ingress"
+    description = "DNS"
+  },
+  port8443 = {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 8443
+    to_port     = 8443
+    protocol    = "tcp"
+    type        = "ingress"
+    description = "DNS"
+  },
+  cluster_to_node = {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    type        = "ingress"
+    description = "Cluster to node communication"
+  }
+  node_to_cluster = {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    type        = "ingress"
+    description = "Node to cluster API"
+  }
+}
+
+#Helm Config
+helm_charts = {
+  metrics_server = {
+    name       = "metrics-server"
+    chart      = "metrics-server"
+    repository = "https://kubernetes-sigs.github.io/metrics-server"
+    version    = "v3.12.2"
+    namespace  = "kube-system"
+    set = [
+      {
+        name  = "apiService.create"
+        value = "true"
+      }
+    ]
+  },
+  kube-state-metrics = {
+    name       = "kube-state-metrics"
+    chart      = "kube-state-metrics"
+    repository = "https://prometheus-community.github.io/helm-charts"
+    version    = ""
+    namespace  = "kube-system"
+    set = [
+      {
+        name  = "apiService.create"
+        value = "true"
+      },
+      {
+        name  = "metricLabelsAllowlist[0]"
+        value = "nodes=[*]"
+      },
+      {
+        name  = "metricAnnotationsAllowList[0]"
+        value = "nodes=[*]"
+      }
+    ]
+  }
+}
+
+#Addons Config
+addons = {
+  vpc-cni = {
+    name    = "vpc-cni"
+    version = "v1.19.2-eksbuild.1"
+  },
+  coredns = {
+    name    = "coredns"
+    version = "v1.11.4-eksbuild.2"
+  },
+  kube-proxy = {
+    name    = "kube-proxy"
+    version = "v1.31.3-eksbuild.2"
+  }
+}
