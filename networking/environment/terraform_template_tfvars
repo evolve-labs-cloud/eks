@@ -1,0 +1,23 @@
+region      = "us-east-1"
+prefix      = ""
+vertical_id = ""
+
+enable_vpc_endpoint_dynamodb = false
+enable_vpc_endpoint_s3       = false
+
+#VPC Configurations
+cidr                 = "10.0.0.0/16"
+vpc_additional_cidrs = ["100.64.0.0/16"]
+
+availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
+public_subnets     = ["10.0.48.0/24", "10.0.49.0/24", "10.0.50.0/24"]
+private_subnets    = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20", "100.64.0.0/18", "100.64.64.0/18", "100.64.128.0/18"]
+database_subnets   = ["10.0.51.0/24", "10.0.52.0/24", "10.0.53.0/24"]
+
+db_ingress_rules = [
+  {
+    port        = 5432
+    protocol    = "tcp"
+    description = "Postgres"
+  }
+]
