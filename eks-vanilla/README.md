@@ -15,13 +15,18 @@ This documentation is automatically generated for all Terraform modules in this 
 
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0.0 |
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | >= 2.0.0 |
+| <a name="requirement_kubectl"></a> [kubectl](#requirement\_kubectl) | >= 1.19.0 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.0.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.84.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.86.1 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
@@ -45,7 +50,7 @@ No requirements.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_addons"></a> [addons](#input\_addons) | Addons | <pre>map(object({<br/>    name    = string<br/>    version = string<br/>  }))</pre> | n/a | yes |
+| <a name="input_addons"></a> [addons](#input\_addons) | Addons | <pre>map(object({<br/>    name    = string<br/>    version = string<br/>    configuration_values = object({<br/>      compute_type = string<br/>    })<br/>  }))</pre> | n/a | yes |
 | <a name="input_fargate_node_groups"></a> [fargate\_node\_groups](#input\_fargate\_node\_groups) | n/a | <pre>map(object({<br/>    fargate_profile_name = string<br/>    access_entry_type    = string<br/>  }))</pre> | n/a | yes |
 | <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm Charts | <pre>map(object({<br/>    name       = string<br/>    repository = string<br/>    chart      = string<br/>    namespace  = string<br/>    version    = string<br/>    set = list(object({<br/>      name  = string<br/>      value = string<br/>    }))<br/>  }))</pre> | n/a | yes |
 | <a name="input_ingress_rules"></a> [ingress\_rules](#input\_ingress\_rules) | EKS Security Group | <pre>map(object({<br/>    from_port   = number<br/>    to_port     = number<br/>    protocol    = string<br/>    cidr_blocks = list(string)<br/>    description = string<br/>    type        = string<br/>  }))</pre> | n/a | yes |
@@ -77,9 +82,9 @@ No requirements.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | n/a |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
+| <a name="provider_tls"></a> [tls](#provider\_tls) | n/a |
 
 ## Modules
 
@@ -96,29 +101,24 @@ No modules.
 | [aws_eks_fargate_profile.fargate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_fargate_profile) | resource |
 | [aws_eks_node_group.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group) | resource |
 | [aws_iam_instance_profile.nodes](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
-| [aws_iam_role.coredns_fix](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_openid_connect_provider.eks](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider) | resource |
 | [aws_iam_role.eks_fargate_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.eks_nodes_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
-| [aws_iam_role_policy_attachment.coredns_fix](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.fargate_policies](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.nodes_policies](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_lambda_function.coredns_fix](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) | resource |
-| [aws_security_group.coredns_fix](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group_rule.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
-| [archive_file.coredns_archive](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_eks_cluster_auth.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster_auth) | data source |
-| [aws_iam_policy_document.coredns_fix](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.fargate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_lambda_invocation.coredns_fix](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lambda_invocation) | data source |
 | [terraform_remote_state.infra](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
+| [tls_certificate.eks](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/certificate) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_addons"></a> [addons](#input\_addons) | Addons | <pre>map(object({<br/>    name    = string<br/>    version = string<br/>  }))</pre> | n/a | yes |
+| <a name="input_addons"></a> [addons](#input\_addons) | Addons | <pre>map(object({<br/>    name    = string<br/>    version = string<br/>    configuration_values = object({<br/>      compute_type = string<br/>    })<br/>  }))</pre> | n/a | yes |
 | <a name="input_eks_cluster_role"></a> [eks\_cluster\_role](#input\_eks\_cluster\_role) | EKS Cluster Role ARN | `string` | n/a | yes |
 | <a name="input_fargate_node_groups"></a> [fargate\_node\_groups](#input\_fargate\_node\_groups) | n/a | <pre>map(object({<br/>    fargate_profile_name = string<br/>    access_entry_type    = string<br/>  }))</pre> | n/a | yes |
 | <a name="input_ingress_rules"></a> [ingress\_rules](#input\_ingress\_rules) | EKS Security Group | <pre>map(object({<br/>    from_port   = number<br/>    to_port     = number<br/>    protocol    = string<br/>    cidr_blocks = list(string)<br/>    description = string<br/>    type        = string<br/>  }))</pre> | n/a | yes |
@@ -144,6 +144,7 @@ No modules.
 | <a name="output_eks_cluster_name"></a> [eks\_cluster\_name](#output\_eks\_cluster\_name) | n/a |
 | <a name="output_iam_open_id_connect"></a> [iam\_open\_id\_connect](#output\_iam\_open\_id\_connect) | n/a |
 | <a name="output_instance_profile"></a> [instance\_profile](#output\_instance\_profile) | n/a |
+| <a name="output_oidc_provider_arn"></a> [oidc\_provider\_arn](#output\_oidc\_provider\_arn) | n/a |
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | n/a |
 
 ---
@@ -193,7 +194,6 @@ No requirements.
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
-| <a name="provider_tls"></a> [tls](#provider\_tls) | n/a |
 
 ## Modules
 
@@ -203,17 +203,15 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_iam_openid_connect_provider.eks](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider) | resource |
 | [aws_iam_role.eks_cluster_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.cluster_policies](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_policy_document.cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [tls_certificate.eks](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/certificate) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_eks_cluster_identity"></a> [eks\_cluster\_identity](#input\_eks\_cluster\_identity) | value of the EKS cluster idnetity | `string` | n/a | yes |
+| <a name="input_oidc_provider_arn"></a> [oidc\_provider\_arn](#input\_oidc\_provider\_arn) | OIDC Provider ARN | `string` | n/a | yes |
 | <a name="input_prefix"></a> [prefix](#input\_prefix) | Project Name | `string` | n/a | yes |
 
 ## Outputs
@@ -221,7 +219,6 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_eks_cluster_role_arn"></a> [eks\_cluster\_role\_arn](#output\_eks\_cluster\_role\_arn) | n/a |
-| <a name="output_iam_open_id_connect"></a> [iam\_open\_id\_connect](#output\_iam\_open\_id\_connect) | n/a |
 
 ---
 
