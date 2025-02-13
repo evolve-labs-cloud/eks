@@ -6,7 +6,9 @@ resource "aws_subnet" "private_subnets" {
   availability_zone = element(var.availability_zones, count.index)
 
   tags = {
-    Name = "${lower(var.prefix)}-private-subnet-${count.index}"
+    Name                                              = "${lower(var.prefix)}-private-subnet-${count.index}",
+    "karpenter.sh/discovery"                          = "${var.prefix}-eks-cluster",
+    "kubernetes.io/cluster/${var.prefix}-eks-cluster" = "owned"
   }
 
   depends_on = [aws_vpc_ipv4_cidr_block_association.main]

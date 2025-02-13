@@ -21,30 +21,15 @@ variable "k8s_version" {
   type        = string
 }
 
-variable "nodes_instance_sizes" {
-  description = "Nodes instance sizes"
-  type        = list(string)
-}
-
-variable "auto_scale_options" {
-  description = "Auto Scale Options"
-  type = object({
-    min     = number
-    max     = number
-    desired = number
-  })
-}
-
-variable "nodes_capacity_type" {
-  description = "Nodes Capacity Type"
-  type        = string
-}
 
 variable "addons" {
   description = "Addons"
   type = map(object({
     name    = string
     version = string
+    configuration_values = object({
+      compute_type = string
+    })
   }))
 }
 
@@ -60,12 +45,6 @@ variable "ingress_rules" {
   }))
 }
 
-variable "eks_access_entry_type" {
-  description = "EKS access entry type"
-  type        = string
-}
-
-
 variable "helm_charts" {
   description = "Helm Charts"
   type = map(object({
@@ -78,5 +57,44 @@ variable "helm_charts" {
       name  = string
       value = string
     }))
+  }))
+}
+
+variable "node_groups" {
+  type = map(object({
+    node_group_name   = string
+    access_entry_type = string
+    instance_types    = list(string)
+    scaling_config = object({
+      desired_size = number
+      max_size     = number
+      min_size     = number
+    })
+    capacity_type = string
+    ami_type      = string
+    labels = object({
+      capacity_arch = string
+      capacity_os   = string
+      capacity_type = string
+    })
+  }))
+}
+
+variable "fargate_node_groups" {
+  type = map(object({
+    fargate_profile_name = string
+    access_entry_type    = string
+  }))
+}
+
+variable "karpenter_capacity" {
+  type = map(object({
+    name            = string
+    workload        = string
+    ami_family      = string
+    ami_ssm         = string
+    instance_family = list(string)
+    instance_sizes  = list(string)
+    capacity_type   = list(string)
   }))
 }

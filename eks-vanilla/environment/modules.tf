@@ -1,43 +1,62 @@
-module "eks" {
-  source = "../modules/eks"
-
-  k8s_version           = var.k8s_version
-  prefix                = var.prefix
-  subnet_ids            = flatten(data.terraform_remote_state.infra.outputs.private_subnets)
-  eks_cluster_role      = module.iam.eks_cluster_role_arn
-  eks_nodes_role        = module.iam.eks_nodes_role_arn
-  kms_key_arn           = module.kms.kms_key_arn
-  nodes_instance_sizes  = var.nodes_instance_sizes
-  pods_subnets_ids      = flatten(local.pod_subnet_ids)
-  auto_scale_options    = var.auto_scale_options
-  addons                = var.addons
-  ingress_rules         = var.ingress_rules
-  remote_state_bucket   = var.remote_state_bucket
-  remote_state_key      = var.remote_state_key
-  region                = var.region
-  eks_access_entry_type = var.eks_access_entry_type
-  nodes_capacity_type   = var.nodes_capacity_type
-}
-
-module "iam" {
-  source = "../modules/iam"
-
-  prefix               = var.prefix
-  eks_cluster_name     = var.prefix
-  eks_cluster_identity = module.eks.eks_cluster_identity
-}
-
-module "helm" {
-  source     = "../modules/helm"
-  depends_on = [module.eks]
-
-  helm_charts = var.helm_charts
-}
-
 module "kms" {
   source = "../modules/kms"
 
   prefix = var.prefix
+}
+
+module "iam" {
+  source            = "../modules/iam"
+  prefix            = var.prefix
+  oidc_provider_arn = module.eks.oidc_provider_arn
+}
+
+module "eks" {
+  source              = "../modules/eks"
+  k8s_version         = var.k8s_version
+  prefix              = var.prefix
+  subnet_ids          = flatten(data.terraform_remote_state.infra.outputs.private_subnets)
+  eks_cluster_role    = module.iam.eks_cluster_role_arn
+  kms_key_arn         = module.kms.kms_key_arn
+  pods_subnets_ids    = flatten(local.pod_subnet_ids)
+  addons              = var.addons
+  ingress_rules       = var.ingress_rules
+  remote_state_bucket = var.remote_state_bucket
+  remote_state_key    = var.remote_state_key
+  region              = var.region
+  node_groups         = var.node_groups
+  vpc_id              = data.terraform_remote_state.infra.outputs.vpc_id
+  fargate_node_groups = var.fargate_node_groups
+}
+
+module "helm" {
+  depends_on = [module.eks]
+  source     = "../modules/helm"
+
+  helm_charts = var.helm_charts
+}
+
+module "karpenter" {
+  source = "../modules/karpenter"
+  providers = {
+    kubectl = kubectl
+  }
+
+  prefix                        = var.prefix
+  cluster_endpoint              = module.eks.cluster_endpoint
+  karpenter_capacity            = var.karpenter_capacity
+  instance_profile              = module.eks.instance_profile
+  security_group_id             = module.eks.security_group_id
+  subnet_ids                    = flatten(local.pod_subnet_ids)
+  availability_zones            = data.terraform_remote_state.infra.outputs.availability_zones
+  iam_open_id_connect           = module.eks.oidc_provider_arn
+  cluster_token                 = module.eks.cluster_token
+  cluster_certificate_authority = module.eks.cluster_certificate_authority
+
+
+  depends_on = [
+    module.eks,
+    module.helm
+  ]
 }
 
 #get subnets for pods
@@ -45,6 +64,7 @@ data "aws_subnet" "private_subnets" {
   for_each = toset(data.terraform_remote_state.infra.outputs.private_subnets)
   id       = each.value
 }
+
 
 locals {
   pod_subnet_ids = [

@@ -21,3 +21,7 @@ output "database_subnets" {
 output "vpc_name" {
   value = lookup(aws_vpc.vpc.tags, "Name")
 }
+output "availability_zones" {
+  value       = var.availability_zones
+  description = "List of availability zones"
+}

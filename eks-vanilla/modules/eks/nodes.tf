@@ -1,47 +1,36 @@
 resource "aws_eks_node_group" "main" {
+  for_each = var.node_groups
 
-  cluster_name    = aws_eks_cluster.main.id
-  node_group_name = aws_eks_cluster.main.id
-
-  node_role_arn = var.eks_nodes_role
-
-  instance_types = var.nodes_instance_sizes
-
-  subnet_ids = var.pods_subnets_ids
+  cluster_name    = "${var.prefix}-eks-cluster"
+  node_group_name = each.value.node_group_name
+  node_role_arn   = aws_iam_role.eks_nodes_role.arn
+  subnet_ids      = var.pods_subnets_ids
+  instance_types  = each.value.instance_types
 
   scaling_config {
-    desired_size = lookup(var.auto_scale_options, "desired")
-    max_size     = lookup(var.auto_scale_options, "max")
-    min_size     = lookup(var.auto_scale_options, "min")
+    desired_size = each.value.scaling_config.desired_size
+    max_size     = each.value.scaling_config.max_size
+    min_size     = each.value.scaling_config.min_size
   }
-  #MIScCELANEOUS
-  capacity_type = var.nodes_capacity_type
-  ami_type      = "BOTTLEROCKET_X86_64"
+
+  capacity_type = each.value.capacity_type
+  ami_type      = each.value.ami_type
 
   labels = {
-    "capacity/arch" = "x86_64"
-    "capacity/os"   = "AMAZON_LINUX"
-    "capacity/type" = "${var.nodes_capacity_type}"
+    "capacity/arch" = each.value.labels.capacity_arch
+    "capacity/os"   = each.value.labels.capacity_os
+    "capacity/type" = each.value.labels.capacity_type
   }
 
   tags = {
-    "kubernetes.io/cluster/${var.prefix}" = "owned"
+    "kubernetes.io/cluster/${var.prefix}-eks-cluster" = "owned"
   }
 
-  depends_on = [
-    aws_eks_access_entry.nodes
-  ]
-
-  lifecycle {
-    ignore_changes = [
-      scaling_config[0].desired_size
-    ]
-  }
+  depends_on = [aws_eks_cluster.main]
 
   timeouts {
     create = "1h"
     update = "2h"
     delete = "2h"
   }
-
 }

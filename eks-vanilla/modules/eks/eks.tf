@@ -28,6 +28,6 @@ resource "aws_eks_cluster" "main" {
   }
 
   tags = {
-    "kubernetes.io/cluster/${var.prefix}" = "shared"
+    "kubernetes.io/cluster/${var.prefix}-eks-cluster" = "shared"
   }
 }
