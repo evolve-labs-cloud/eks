@@ -27,6 +27,9 @@ variable "addons" {
   type = map(object({
     name    = string
     version = string
+    configuration_values = object({
+      compute_type = string
+    })
   }))
 }
 

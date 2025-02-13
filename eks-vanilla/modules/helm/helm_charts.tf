@@ -14,6 +14,5 @@ resource "helm_release" "helm" {
       name  = set.value.name
       value = set.value.value
     }
-
   }
 }

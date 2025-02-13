@@ -1,10 +1,36 @@
+# environment/providers.tf
+
+terraform {
+  required_providers {
+    kubectl = {
+      source  = "gavinbunney/kubectl" # Changed from hashicorp/kubectl
+      version = ">= 1.19.0"
+    }
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.0.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.0.0"
+    }
+  }
+}
+
+provider "kubectl" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority)
+  token                  = module.eks.cluster_token
+  load_config_file       = false
+}
+
+# Your existing provider configurations
 provider "aws" {
-  # assume_role {
-  #   role_arn = "arn:aws:iam::${var.vertical_id}:role/terraform-assume-role"
-  # }
-
   region = var.region
-
   default_tags {
     tags = {
       environment = "prod"
@@ -12,7 +38,6 @@ provider "aws" {
     }
   }
 }
-
 
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint
@@ -29,5 +54,3 @@ provider "helm" {
     config_path            = "~/.kube/config"
   }
 }
-
-

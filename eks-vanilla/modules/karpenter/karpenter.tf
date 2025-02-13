@@ -6,12 +6,7 @@ terraform {
     }
   }
 }
-provider "kubectl" {
-  host                   = var.cluster_endpoint
-  cluster_ca_certificate = base64decode(var.cluster_certificate_authority)
-  token                  = var.cluster_token
-  load_config_file       = false
-}
+
 
 resource "kubectl_manifest" "ec2_node_class" {
   for_each = var.karpenter_capacity
@@ -40,8 +35,7 @@ resource "kubectl_manifest" "nodepool" {
     AVAILABILITY_ZONES = var.availability_zones
   })
 
-  depends_on = [
-    kubectl_manifest.ec2_node_class,
-    helm_release.karpenter
-  ]
+  depends_on = [kubectl_manifest.ec2_node_class]
 }
+
+

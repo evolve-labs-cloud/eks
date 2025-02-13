@@ -1,4 +1,4 @@
-region      = "us-east-1"
+region      = ""
 prefix      = ""
 vertical_id = ""
 
@@ -22,32 +22,18 @@ karpenter_capacity = {
 
 #Node Groups Config
 node_groups = {
-  "evolvelabs-spot" = {
-    node_group_name   = "evolvelabs-spot"
-    access_entry_type = "EC2_LINUX"
-    instance_types    = ["t3.medium", "t3.large"]
 
-    scaling_config = {
-      desired_size = 2
-      max_size     = 2
-      min_size     = 2
-    }
-    capacity_type = "SPOT"
-    ami_type      = "BOTTLEROCKET_x86_64"
-
-    labels = {
-      capacity_arch = "x86_64"
-      capacity_os   = "BOOTTLE_ROCKET"
-      capacity_type = "SPOT"
-    }
-  }
 }
 
 fargate_node_groups = {
-  # "evolve-labs-fargate" = {
-  #   fargate_profile_name = "evolve-labs-fargate"
-  #   access_entry_type    = "FARGATE_LINUX"
-  # }
+  "kube-system" = {
+    fargate_profile_name = "kube-system"
+    access_entry_type    = "FARGATE_LINUX"
+  },
+  "karpenter" = {
+    fargate_profile_name = "karpenter"
+    access_entry_type    = "FARGATE_LINUX"
+  }
 }
 
 #Security Groups Config
@@ -138,7 +124,7 @@ helm_charts = {
     name       = "kube-state-metrics"
     chart      = "kube-state-metrics"
     repository = "https://prometheus-community.github.io/helm-charts"
-    version    = ""
+    version    = "5.14.0"
     namespace  = "kube-system"
     set = [
       {
@@ -162,13 +148,22 @@ addons = {
   vpc-cni = {
     name    = "vpc-cni"
     version = "v1.19.2-eksbuild.1"
+    configuration_values = {
+      compute_type = "ec2"
+    }
   },
   coredns = {
     name    = "coredns"
     version = "v1.11.4-eksbuild.2"
+    configuration_values = {
+      compute_type = "fargate"
+    }
   },
   kube-proxy = {
     name    = "kube-proxy"
     version = "v1.31.3-eksbuild.2"
+    configuration_values = {
+      compute_type = "ec2"
+    }
   }
 }

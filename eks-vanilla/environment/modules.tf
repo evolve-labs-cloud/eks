@@ -1,6 +1,17 @@
-module "eks" {
-  source = "../modules/eks"
+module "kms" {
+  source = "../modules/kms"
 
+  prefix = var.prefix
+}
+
+module "iam" {
+  source            = "../modules/iam"
+  prefix            = var.prefix
+  oidc_provider_arn = module.eks.oidc_provider_arn
+}
+
+module "eks" {
+  source              = "../modules/eks"
   k8s_version         = var.k8s_version
   prefix              = var.prefix
   subnet_ids          = flatten(data.terraform_remote_state.infra.outputs.private_subnets)
@@ -17,13 +28,6 @@ module "eks" {
   fargate_node_groups = var.fargate_node_groups
 }
 
-module "iam" {
-  source = "../modules/iam"
-
-  prefix               = var.prefix
-  eks_cluster_identity = module.eks.eks_cluster_identity
-}
-
 module "helm" {
   depends_on = [module.eks]
   source     = "../modules/helm"
@@ -31,26 +35,28 @@ module "helm" {
   helm_charts = var.helm_charts
 }
 
-module "kms" {
-  source = "../modules/kms"
-
-  prefix = var.prefix
-}
-
 module "karpenter" {
-  # depends_on = [module.eks, module.iam]
   source = "../modules/karpenter"
+  providers = {
+    kubectl = kubectl
+  }
 
   prefix                        = var.prefix
   cluster_endpoint              = module.eks.cluster_endpoint
   karpenter_capacity            = var.karpenter_capacity
-  instance_profile              = local.instance_profile_name
+  instance_profile              = module.eks.instance_profile
   security_group_id             = module.eks.security_group_id
   subnet_ids                    = flatten(local.pod_subnet_ids)
   availability_zones            = data.terraform_remote_state.infra.outputs.availability_zones
-  iam_open_id_connect           = module.iam.iam_open_id_connect
+  iam_open_id_connect           = module.eks.oidc_provider_arn
   cluster_token                 = module.eks.cluster_token
   cluster_certificate_authority = module.eks.cluster_certificate_authority
+
+
+  depends_on = [
+    module.eks,
+    module.helm
+  ]
 }
 
 #get subnets for pods
@@ -61,8 +67,6 @@ data "aws_subnet" "private_subnets" {
 
 
 locals {
-  instance_profile_name = try(tostring(element(module.eks.instance_profile, 0)), "")
-
   pod_subnet_ids = [
     for subnet_id, subnet in data.aws_subnet.private_subnets : subnet_id
     if startswith(subnet.cidr_block, "100.")

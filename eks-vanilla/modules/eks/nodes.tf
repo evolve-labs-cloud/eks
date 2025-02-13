@@ -3,21 +3,18 @@ resource "aws_eks_node_group" "main" {
 
   cluster_name    = "${var.prefix}-eks-cluster"
   node_group_name = each.value.node_group_name
-
-  node_role_arn = each.value.access_entry_type == "EC2_LINUX" ? aws_iam_role.eks_nodes_role[each.key].arn : aws_iam_role.eks_fargate_role[each.key].arn
-
-  instance_types = each.value.access_entry_type == "EC2_LINUX" ? each.value.instance_types : []
-
-  subnet_ids = var.pods_subnets_ids
+  node_role_arn   = aws_iam_role.eks_nodes_role.arn
+  subnet_ids      = var.pods_subnets_ids
+  instance_types  = each.value.instance_types
 
   scaling_config {
     desired_size = each.value.scaling_config.desired_size
     max_size     = each.value.scaling_config.max_size
     min_size     = each.value.scaling_config.min_size
   }
-  #MISCELANEOUS
-  capacity_type = each.value.access_entry_type == "EC2_LINUX" ? each.value.capacity_type : null
-  ami_type      = each.value.access_entry_type == "EC2_LINUX" ? each.value.ami_type : null
+
+  capacity_type = each.value.capacity_type
+  ami_type      = each.value.ami_type
 
   labels = {
     "capacity/arch" = each.value.labels.capacity_arch
@@ -29,20 +26,11 @@ resource "aws_eks_node_group" "main" {
     "kubernetes.io/cluster/${var.prefix}-eks-cluster" = "owned"
   }
 
-  depends_on = [
-    aws_eks_access_entry.nodes
-  ]
-
-  # lifecycle {
-  #   ignore_changes = [
-  #     scaling_config[0].desired_size
-  #   ]
-  # }
+  depends_on = [aws_eks_cluster.main]
 
   timeouts {
     create = "1h"
     update = "2h"
     delete = "2h"
   }
-
 }

@@ -3,10 +3,7 @@ variable "prefix" {
   type        = string
 }
 
-variable "eks_cluster_identity" {
-  description = "value of the EKS cluster idnetity"
+variable "oidc_provider_arn" {
+  description = "OIDC Provider ARN"
   type        = string
 }
-
-
-
