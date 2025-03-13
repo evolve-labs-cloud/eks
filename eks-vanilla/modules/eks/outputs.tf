@@ -31,3 +31,6 @@ output "iam_open_id_connect" {
 output "oidc_provider_arn" {
   value = aws_iam_openid_connect_provider.eks.arn
 }
+output "eks_url" {
+  value = aws_iam_openid_connect_provider.eks.url
+}

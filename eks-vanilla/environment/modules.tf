@@ -58,6 +58,22 @@ module "karpenter" {
     module.helm
   ]
 }
+module "ingress_controllers" {
+  source = "../modules/nlb"
+  # providers = {
+  #   kubectl = kubectl
+  # }
+
+  prefix     = var.prefix
+  vpc_id     = data.terraform_remote_state.infra.outputs.vpc_id
+  region     = var.region
+  subnet_ids = flatten(data.terraform_remote_state.infra.outputs.public_subnets)
+  # ingress_controllers = var.ingress_controllers
+  eks_url           = module.eks.eks_url
+  oidc_provider_arn = module.eks.oidc_provider_arn
+
+  depends_on = [module.eks, module.karpenter]
+}
 
 #get subnets for pods
 data "aws_subnet" "private_subnets" {

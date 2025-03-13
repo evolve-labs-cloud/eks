@@ -27,9 +27,9 @@ variable "addons" {
   type = map(object({
     name    = string
     version = string
-    configuration_values = object({
-      compute_type = string
-    })
+    configuration_values = optional(object({
+      computeType = optional(string)
+    }))
   }))
 }
 
@@ -98,3 +98,15 @@ variable "karpenter_capacity" {
     capacity_type   = list(string)
   }))
 }
+
+# variable "ingress_controllers" {
+#   type = map(object({
+#     min_replicas    = number
+#     max_replicas    = number
+#     requests_cpu    = string
+#     requests_memory = string
+#     limits_cpu      = string
+#     limits_memory   = string
+#   }))
+
+# }

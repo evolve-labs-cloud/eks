@@ -3,6 +3,28 @@ kind: Namespace
 metadata:
   name: chip
 ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chip-ingress
+  namespace: chip
+  annotations:
+  labels:
+    app.kubernetes.io/name: chip
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: chip.msfidelis.com.br # Substitua pelo seu domínio
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chip
+                port:
+                  number: 8080
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -11,7 +33,7 @@ metadata:
   name: chip
   namespace: chip
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: chip
@@ -23,23 +45,24 @@ spec:
         version: v1
     spec:
 
-      nodeSelector:
-        karpenter.sh/nodepool: soft 
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "topology.kubernetes.io/zone"
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: chip
 
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app: chip
-              topologyKey: "topology.kubernetes.io/zone"
-
+        - maxSkew: 1
+          topologyKey: "node.kubernetes.io/instance-type"
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: chip
 
       containers:
       - name: chip
-        image: fidelissauro/chip:v1
+        image: fidelissauro/chip:v2
         ports:
         - containerPort: 8080
           name: http
@@ -47,9 +70,6 @@ spec:
           requests:
             cpu: 250m
             memory: 512Mi
-          limits:
-            cpu: 250m
-            memory: 512Mi            
         startupProbe:
           failureThreshold: 10
           httpGet:
@@ -84,15 +104,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: chip
-  namespace: chip 
+  namespace: chip
   labels:
     app.kubernetes.io/name: chip
-    app.kubernetes.io/instance: chip 
+    app.kubernetes.io/instance: chip
 spec:
   ports:
   - name: web
     port: 8080
     protocol: TCP
+    targetPort: 8080
   selector:
     app: chip
-  type: ClusterIP
