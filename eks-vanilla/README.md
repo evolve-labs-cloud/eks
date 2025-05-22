@@ -6,10 +6,13 @@ This documentation is automatically generated for all Terraform modules in this 
 
 - [`environment/`](#module-environment-)
 - [`modules//eks/`](#module-modules--eks-)
+- [`modules//external_secrets/`](#module-modules--external_secrets-)
 - [`modules//helm/`](#module-modules--helm-)
 - [`modules//iam/`](#module-modules--iam-)
+- [`modules//istio/`](#module-modules--istio-)
 - [`modules//karpenter/`](#module-modules--karpenter-)
 - [`modules//kms/`](#module-modules--kms-)
+- [`modules//lb/`](#module-modules--lb-)
 
 # Module: `environment/`
 
@@ -34,8 +37,10 @@ This documentation is automatically generated for all Terraform modules in this 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_eks"></a> [eks](#module\_eks) | ../modules/eks | n/a |
+| <a name="module_external_secrets"></a> [external\_secrets](#module\_external\_secrets) | ../modules/external_secrets | n/a |
 | <a name="module_helm"></a> [helm](#module\_helm) | ../modules/helm | n/a |
 | <a name="module_iam"></a> [iam](#module\_iam) | ../modules/iam | n/a |
+| <a name="module_ingress_controllers"></a> [ingress\_controllers](#module\_ingress\_controllers) | ../modules/lb | n/a |
 | <a name="module_karpenter"></a> [karpenter](#module\_karpenter) | ../modules/karpenter | n/a |
 | <a name="module_kms"></a> [kms](#module\_kms) | ../modules/kms | n/a |
 
@@ -50,7 +55,7 @@ This documentation is automatically generated for all Terraform modules in this 
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_addons"></a> [addons](#input\_addons) | Addons | <pre>map(object({<br/>    name    = string<br/>    version = string<br/>    configuration_values = object({<br/>      compute_type = string<br/>    })<br/>  }))</pre> | n/a | yes |
+| <a name="input_addons"></a> [addons](#input\_addons) | Addons | <pre>map(object({<br/>    name    = string<br/>    version = string<br/>    configuration_values = optional(object({<br/>      computeType = optional(string)<br/>    }))<br/>  }))</pre> | n/a | yes |
 | <a name="input_fargate_node_groups"></a> [fargate\_node\_groups](#input\_fargate\_node\_groups) | n/a | <pre>map(object({<br/>    fargate_profile_name = string<br/>    access_entry_type    = string<br/>  }))</pre> | n/a | yes |
 | <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm Charts | <pre>map(object({<br/>    name       = string<br/>    repository = string<br/>    chart      = string<br/>    namespace  = string<br/>    version    = string<br/>    set = list(object({<br/>      name  = string<br/>      value = string<br/>    }))<br/>  }))</pre> | n/a | yes |
 | <a name="input_ingress_rules"></a> [ingress\_rules](#input\_ingress\_rules) | EKS Security Group | <pre>map(object({<br/>    from_port   = number<br/>    to_port     = number<br/>    protocol    = string<br/>    cidr_blocks = list(string)<br/>    description = string<br/>    type        = string<br/>  }))</pre> | n/a | yes |
@@ -68,7 +73,9 @@ This documentation is automatically generated for all Terraform modules in this 
 | Name | Description |
 |------|-------------|
 | <a name="output_cluster_endpoint"></a> [cluster\_endpoint](#output\_cluster\_endpoint) | n/a |
+| <a name="output_eks_url"></a> [eks\_url](#output\_eks\_url) | n/a |
 | <a name="output_instance_profile"></a> [instance\_profile](#output\_instance\_profile) | n/a |
+| <a name="output_oidc_provider_arn"></a> [oidc\_provider\_arn](#output\_oidc\_provider\_arn) | n/a |
 
 ---
 
@@ -118,7 +125,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_addons"></a> [addons](#input\_addons) | Addons | <pre>map(object({<br/>    name    = string<br/>    version = string<br/>    configuration_values = object({<br/>      compute_type = string<br/>    })<br/>  }))</pre> | n/a | yes |
+| <a name="input_addons"></a> [addons](#input\_addons) | Addons | <pre>map(object({<br/>    name    = string<br/>    version = string<br/>    configuration_values = optional(object({<br/>      computeType = optional(string)<br/>    }))<br/>  }))</pre> | n/a | yes |
 | <a name="input_eks_cluster_role"></a> [eks\_cluster\_role](#input\_eks\_cluster\_role) | EKS Cluster Role ARN | `string` | n/a | yes |
 | <a name="input_fargate_node_groups"></a> [fargate\_node\_groups](#input\_fargate\_node\_groups) | n/a | <pre>map(object({<br/>    fargate_profile_name = string<br/>    access_entry_type    = string<br/>  }))</pre> | n/a | yes |
 | <a name="input_ingress_rules"></a> [ingress\_rules](#input\_ingress\_rules) | EKS Security Group | <pre>map(object({<br/>    from_port   = number<br/>    to_port     = number<br/>    protocol    = string<br/>    cidr_blocks = list(string)<br/>    description = string<br/>    type        = string<br/>  }))</pre> | n/a | yes |
@@ -142,10 +149,52 @@ No modules.
 | <a name="output_cluster_token"></a> [cluster\_token](#output\_cluster\_token) | n/a |
 | <a name="output_eks_cluster_identity"></a> [eks\_cluster\_identity](#output\_eks\_cluster\_identity) | n/a |
 | <a name="output_eks_cluster_name"></a> [eks\_cluster\_name](#output\_eks\_cluster\_name) | n/a |
+| <a name="output_eks_url"></a> [eks\_url](#output\_eks\_url) | n/a |
 | <a name="output_iam_open_id_connect"></a> [iam\_open\_id\_connect](#output\_iam\_open\_id\_connect) | n/a |
 | <a name="output_instance_profile"></a> [instance\_profile](#output\_instance\_profile) | n/a |
 | <a name="output_oidc_provider_arn"></a> [oidc\_provider\_arn](#output\_oidc\_provider\_arn) | n/a |
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | n/a |
+
+---
+
+# Module: `modules//external_secrets/`
+
+## Requirements
+
+No requirements.
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [aws_eks_pod_identity_association.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_pod_identity_association) | resource |
+| [aws_iam_policy.external_secrets_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_role.external_secrets_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy_attachment.external_secrets_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [helm_release.external_secrets](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [aws_iam_policy_document.external_secrets_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.external_secrets_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_prefix"></a> [prefix](#input\_prefix) | Prefix to be used for all resources | `string` | n/a | yes |
+
+## Outputs
+
+No outputs.
 
 ---
 
@@ -219,6 +268,34 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_eks_cluster_role_arn"></a> [eks\_cluster\_role\_arn](#output\_eks\_cluster\_role\_arn) | n/a |
+
+---
+
+# Module: `modules//istio/`
+
+## Requirements
+
+No requirements.
+
+## Providers
+
+No providers.
+
+## Modules
+
+No modules.
+
+## Resources
+
+No resources.
+
+## Inputs
+
+No inputs.
+
+## Outputs
+
+No outputs.
 
 ---
 
@@ -324,6 +401,52 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_kms_key_arn"></a> [kms\_key\_arn](#output\_kms\_key\_arn) | n/a |
+
+---
+
+# Module: `modules//lb/`
+
+## Requirements
+
+No requirements.
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [aws_ec2_tag.public_subnet_tags](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_tag) | resource |
+| [aws_iam_policy.aws_lb_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy_attachment.aws_lb_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy_attachment) | resource |
+| [aws_iam_role.aws_lb_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [helm_release.alb_ingress_controller](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [aws_iam_policy_document.aws_lb_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.aws_lb_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_eks_url"></a> [eks\_url](#input\_eks\_url) | n/a | `string` | n/a | yes |
+| <a name="input_oidc_provider_arn"></a> [oidc\_provider\_arn](#input\_oidc\_provider\_arn) | n/a | `string` | n/a | yes |
+| <a name="input_prefix"></a> [prefix](#input\_prefix) | Project Name | `string` | n/a | yes |
+| <a name="input_region"></a> [region](#input\_region) | AWS Region | `string` | n/a | yes |
+| <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | Subnet IDs | `list(string)` | n/a | yes |
+| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID | `string` | n/a | yes |
+
+## Outputs
+
+No outputs.
 
 ---
 
