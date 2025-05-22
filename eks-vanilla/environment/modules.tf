@@ -59,7 +59,7 @@ module "karpenter" {
   ]
 }
 module "ingress_controllers" {
-  source = "../modules/nlb"
+  source = "../modules/lb"
   # providers = {
   #   kubectl = kubectl
   # }
@@ -73,6 +73,13 @@ module "ingress_controllers" {
   oidc_provider_arn = module.eks.oidc_provider_arn
 
   depends_on = [module.eks, module.karpenter]
+}
+module "external_secrets" {
+  source = "../modules/external_secrets"
+
+  prefix = var.prefix
+
+  depends_on = [module.eks]
 }
 
 #get subnets for pods

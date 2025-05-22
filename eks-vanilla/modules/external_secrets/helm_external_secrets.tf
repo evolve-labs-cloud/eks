@@ -10,11 +10,5 @@ resource "helm_release" "external_secrets" {
     name  = "installCRDs"
     value = "true"
   }
-
-  depends_on = [
-    aws_eks_cluster.main,
-    aws_eks_node_group.main,
-    aws_eks_pod_identity_association.external_secrets
-  ]
-
+  depends_on = [aws_eks_pod_identity_association.external_secrets]
 }

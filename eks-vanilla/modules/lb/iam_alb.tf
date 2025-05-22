@@ -62,6 +62,7 @@ data "aws_iam_policy_document" "aws_lb_policy" {
       "elasticloadbalancing:DeleteTargetGroup",
       "elasticloadbalancing:DeregisterTargets",
       "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeListenerCertificates", # This was missing
       "elasticloadbalancing:DescribeLoadBalancers",
       "elasticloadbalancing:DescribeLoadBalancerAttributes",
       "elasticloadbalancing:DescribeRules",
