@@ -1,52 +1,93 @@
-# resource "aws_lb" "ingress" {
+# modules/lb/alb.tf - Updated with security group
 
-#   name = var.prefix
+# Get the NodePort for Istio status port
+data "kubernetes_service" "istio_gateway" {
+  metadata {
+    name      = "istio-ingressgateway"
+    namespace = "istio-system"
+  }
+}
 
-#   internal           = false
-#   load_balancer_type = "application"
+locals {
+  # Extract the NodePort for status-port (15021)
+  status_nodeport = [
+    for port in data.kubernetes_service.istio_gateway.spec[0].port :
+    port.node_port if port.name == "status-port"
+  ][0]
+}
 
-#   subnets = var.subnet_ids
+resource "aws_lb" "ingress" {
+  name = var.prefix
 
-#   enable_cross_zone_load_balancing = true
-#   enable_deletion_protection       = false
+  internal           = false
+  load_balancer_type = "application"
 
-#   tags = {
-#     Name                                              = var.prefix
-#     "kubernetes.io/cluster/${var.prefix}-eks-cluster" = "shared"
-#     "elbv2.k8s.aws/cluster"                           = "${var.prefix}-eks-cluster"
-#   }
-#   lifecycle {
-#     ignore_changes = [
-#       access_logs,
-#     ]
-#   }
-# }
+  subnets = var.subnet_ids
 
-# resource "aws_lb_listener" "redirect_http_to_https" {
-#   load_balancer_arn = aws_lb.ingress.arn
-#   port              = "80"
-#   protocol          = "HTTP"
+  # Use our dedicated security group
+  security_groups = [aws_security_group.alb.id]
 
-#   # Default action: redirect HTTP to HTTPS
-#   default_action {
-#     type = "redirect"
-#     redirect {
-#       port        = "443"
-#       protocol    = "HTTPS"
-#       status_code = "HTTP_301"
-#     }
-#   }
+  enable_deletion_protection = false
 
-#   # Let ingress controller manage rules
-#   lifecycle {
-#     ignore_changes = [default_action]
-#   }
-# }
+  tags = {
+    Name                                              = var.prefix
+    "kubernetes.io/cluster/${var.prefix}-eks-cluster" = "shared"
+    "elbv2.k8s.aws/cluster"                           = "${var.prefix}-eks-cluster"
+  }
 
+  lifecycle {
+    ignore_changes = [access_logs]
+  }
+}
+
+# HTTP Listener - Redirect to HTTPS
+resource "aws_lb_listener" "redirect_http_to_https" {
+  load_balancer_arn = aws_lb.ingress.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+# HTTPS Listener
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.ingress.arn
+  port              = "443"
+  protocol          = "HTTPS"
+
+  ssl_policy      = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn = var.certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+}
+
+# Target Group - TargetGroupBinding will override health check settings
+resource "aws_lb_target_group" "main" {
+  name     = format("%s-http", var.prefix)
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+
+  tags = {
+    Name = format("%s-http", var.prefix)
+  }
+
+}
+
+# Tag subnets for ALB
 resource "aws_ec2_tag" "public_subnet_tags" {
   for_each    = toset(var.subnet_ids)
   resource_id = each.value
   key         = "kubernetes.io/role/elb"
   value       = "1"
 }
-

@@ -98,15 +98,34 @@ variable "karpenter_capacity" {
     capacity_type   = list(string)
   }))
 }
+# Istio variables
+variable "istio_version" {
+  description = "Version of the Istio Helm chart"
+  type        = string
+  default     = "1.25.0"
+}
 
-# variable "ingress_controllers" {
-#   type = map(object({
-#     min_replicas    = number
-#     max_replicas    = number
-#     requests_cpu    = string
-#     requests_memory = string
-#     limits_cpu      = string
-#     limits_memory   = string
-#   }))
+variable "istio_cpu_threshold" {
+  description = "CPU threshold for Istio ingress gateway autoscaling"
+  type        = number
+  default     = 60
+}
 
-# }
+variable "istio_min_replicas" {
+  description = "Minimum replicas for Istio ingress gateway autoscaling"
+  type        = number
+  default     = 2
+}
+
+variable "istio_max_replicas" {
+  description = "Maximum replicas for Istio ingress gateway autoscaling"
+  type        = number
+  default     = 10
+}
+
+variable "certificate_arn" {
+  description = "ARN of the certificate for the ingress controller"
+  type        = string
+  default     = ""
+
+}

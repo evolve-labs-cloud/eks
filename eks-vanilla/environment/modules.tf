@@ -58,19 +58,37 @@ module "karpenter" {
     module.helm
   ]
 }
+
+module "istio" {
+  source = "../modules/istio"
+
+  providers = {
+    kubectl = kubectl
+  }
+  istio_version       = var.istio_version
+  istio_cpu_threshold = var.istio_cpu_threshold
+  istio_min_replicas  = var.istio_min_replicas
+  istio_max_replicas  = var.istio_max_replicas
+  target_group_arn    = module.ingress_controllers.target_group_arn
+
+  depends_on = [module.eks, module.karpenter, module.ingress_controllers]
+
+}
+
 module "ingress_controllers" {
   source = "../modules/lb"
   # providers = {
   #   kubectl = kubectl
   # }
 
-  prefix     = var.prefix
-  vpc_id     = data.terraform_remote_state.infra.outputs.vpc_id
-  region     = var.region
-  subnet_ids = flatten(data.terraform_remote_state.infra.outputs.public_subnets)
-  # ingress_controllers = var.ingress_controllers
+  prefix            = var.prefix
+  vpc_id            = data.terraform_remote_state.infra.outputs.vpc_id
+  vpc_cidr_block    = data.terraform_remote_state.infra.outputs.vpc_cidr
+  region            = var.region
+  subnet_ids        = flatten(data.terraform_remote_state.infra.outputs.public_subnets)
   eks_url           = module.eks.eks_url
   oidc_provider_arn = module.eks.oidc_provider_arn
+  certificate_arn   = var.certificate_arn
 
   depends_on = [module.eks, module.karpenter]
 }
