@@ -1,21 +1,3 @@
-# modules/lb/alb.tf - Updated with security group
-
-# Get the NodePort for Istio status port
-data "kubernetes_service" "istio_gateway" {
-  metadata {
-    name      = "istio-ingressgateway"
-    namespace = "istio-system"
-  }
-}
-
-locals {
-  # Extract the NodePort for status-port (15021)
-  status_nodeport = [
-    for port in data.kubernetes_service.istio_gateway.spec[0].port :
-    port.node_port if port.name == "status-port"
-  ][0]
-}
-
 resource "aws_lb" "ingress" {
   name = var.prefix
 

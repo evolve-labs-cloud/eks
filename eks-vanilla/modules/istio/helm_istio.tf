@@ -112,3 +112,24 @@ resource "kubectl_manifest" "target_binding_80" {
   ]
 }
 
+resource "kubectl_manifest" "istio_gateway_shared" {
+  yaml_body = <<-YAML
+    apiVersion: networking.istio.io/v1alpha3
+    kind: Gateway
+    metadata:
+      name: multi-app-gateway
+      namespace: istio-system
+    spec:
+      selector:
+        istio: ingressgateway
+      servers:
+      - port:
+          number: 80
+          name: http
+          protocol: HTTP
+        hosts:
+        - "${var.dns_zone_name}" 
+  YAML
+
+  depends_on = [helm_release.istio_base, helm_release.istiod, helm_release.istio_ingress]
+}

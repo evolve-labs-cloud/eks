@@ -70,11 +70,25 @@ module "istio" {
   istio_min_replicas  = var.istio_min_replicas
   istio_max_replicas  = var.istio_max_replicas
   target_group_arn    = module.ingress_controllers.target_group_arn
+  dns_zone_name       = var.dns_zone_name
+
 
   depends_on = [module.eks, module.karpenter, module.ingress_controllers]
 
 }
 
+module "argo_rollouts" {
+  source = "../modules/argo_rollouts"
+
+  providers = {
+    kubectl = kubectl
+  }
+
+  argo_rollouts_host    = var.argo_rollouts_host
+  argo_rollouts_version = var.argo_rollouts_version
+  depends_on            = [module.eks, module.istio, module.karpenter]
+
+}
 module "ingress_controllers" {
   source = "../modules/lb"
   # providers = {
@@ -89,8 +103,7 @@ module "ingress_controllers" {
   eks_url           = module.eks.eks_url
   oidc_provider_arn = module.eks.oidc_provider_arn
   certificate_arn   = var.certificate_arn
-
-  depends_on = [module.eks, module.karpenter]
+  depends_on        = [module.eks, module.karpenter]
 }
 module "external_secrets" {
   source = "../modules/external_secrets"

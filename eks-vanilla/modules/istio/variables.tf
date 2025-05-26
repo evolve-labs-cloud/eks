@@ -28,3 +28,7 @@ variable "target_group_arn" {
   default     = ""
 
 }
+variable "dns_zone_name" {
+  type        = string
+  description = "DNS zone name for the ALB"
+}
