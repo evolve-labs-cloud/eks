@@ -7,6 +7,8 @@ terraform {
   }
 }
 
+
+
 resource "helm_release" "istio_base" {
   name       = "istio-base"
   chart      = "base"
@@ -131,5 +133,6 @@ resource "kubectl_manifest" "istio_gateway_shared" {
         - "${var.dns_zone_name}" 
   YAML
 
-  depends_on = [helm_release.istio_base, helm_release.istiod, helm_release.istio_ingress]
+  depends_on = [helm_release.istio_base, helm_release.istiod, helm_release.istio_ingress,
+  kubectl_manifest.target_binding_80]
 }

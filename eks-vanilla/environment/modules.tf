@@ -86,7 +86,7 @@ module "argo_rollouts" {
 
   argo_rollouts_host    = var.argo_rollouts_host
   argo_rollouts_version = var.argo_rollouts_version
-  depends_on            = [module.eks, module.istio, module.karpenter]
+  depends_on            = [module.eks, module.istio, module.karpenter, module.ingress_controllers]
 
 }
 module "ingress_controllers" {
@@ -110,9 +110,18 @@ module "external_secrets" {
 
   prefix = var.prefix
 
-  depends_on = [module.eks]
+  depends_on = [module.eks, module.istio]
 }
 
+module "keda" {
+  source = "../modules/keda"
+
+  prefix       = var.prefix
+  keda_version = var.keda_version
+
+  depends_on = [module.eks, module.karpenter]
+
+}
 #get subnets for pods
 data "aws_subnet" "private_subnets" {
   for_each = toset(data.terraform_remote_state.infra.outputs.private_subnets)

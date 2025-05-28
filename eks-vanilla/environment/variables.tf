@@ -147,3 +147,10 @@ variable "argo_rollouts_version" {
   description = "Version of Argo Rollouts to deploy"
   default     = "2.34.1"
 }
+
+variable "keda_version" {
+  type        = string
+  description = "Version of KEDA to deploy"
+  default     = "2.16.0"
+
+}
