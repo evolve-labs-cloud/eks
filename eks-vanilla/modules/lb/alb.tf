@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = ">= 1.19.0"
+    }
+  }
+}
+
 data "kubernetes_service" "istio_gateway" {
   metadata {
     name      = "istio-ingressgateway"

@@ -26,13 +26,8 @@ module "eks" {
   node_groups         = var.node_groups
   vpc_id              = data.terraform_remote_state.infra.outputs.vpc_id
   fargate_node_groups = var.fargate_node_groups
-}
 
-module "helm" {
-  depends_on = [module.eks]
-  source     = "../modules/helm"
 
-  helm_charts = var.helm_charts
 }
 
 module "karpenter" {
@@ -54,9 +49,15 @@ module "karpenter" {
 
 
   depends_on = [
-    module.eks,
-    module.helm
+    module.eks
   ]
+}
+
+module "helm" {
+  depends_on = [module.eks, module.karpenter]
+  source     = "../modules/helm"
+
+  helm_charts = var.helm_charts
 }
 
 module "istio" {
@@ -69,31 +70,19 @@ module "istio" {
   istio_cpu_threshold = var.istio_cpu_threshold
   istio_min_replicas  = var.istio_min_replicas
   istio_max_replicas  = var.istio_max_replicas
-  target_group_arn    = module.ingress_controllers.target_group_arn
-  dns_zone_name       = var.dns_zone_name
+  # target_group_arn    = module.lb.target_group_arn
+  dns_zone_name = var.dns_zone_name
 
 
-  depends_on = [module.eks, module.karpenter, module.ingress_controllers]
+  depends_on = [module.eks, module.karpenter]
 
 }
-
-module "argo_rollouts" {
-  source = "../modules/argo_rollouts"
+module "lb" {
+  source = "../modules/lb"
 
   providers = {
     kubectl = kubectl
   }
-
-  argo_rollouts_host    = var.argo_rollouts_host
-  argo_rollouts_version = var.argo_rollouts_version
-  depends_on            = [module.eks, module.istio, module.karpenter, module.ingress_controllers]
-
-}
-module "ingress_controllers" {
-  source = "../modules/lb"
-  # providers = {
-  #   kubectl = kubectl
-  # }
 
   prefix            = var.prefix
   vpc_id            = data.terraform_remote_state.infra.outputs.vpc_id
@@ -103,8 +92,11 @@ module "ingress_controllers" {
   eks_url           = module.eks.eks_url
   oidc_provider_arn = module.eks.oidc_provider_arn
   certificate_arn   = var.certificate_arn
-  depends_on        = [module.eks, module.karpenter]
+  depends_on        = [module.eks, module.karpenter, module.istio]
 }
+
+
+
 module "external_secrets" {
   source = "../modules/external_secrets"
 
@@ -120,6 +112,19 @@ module "keda" {
   keda_version = var.keda_version
 
   depends_on = [module.eks, module.karpenter]
+
+}
+
+module "argo_rollouts" {
+  source = "../modules/argo_rollouts"
+
+  providers = {
+    kubectl = kubectl
+  }
+
+  argo_rollouts_host    = var.argo_rollouts_host
+  argo_rollouts_version = var.argo_rollouts_version
+  depends_on            = [module.eks, module.istio, module.karpenter]
 
 }
 #get subnets for pods
