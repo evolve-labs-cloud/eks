@@ -45,20 +45,6 @@ variable "ingress_rules" {
   }))
 }
 
-variable "helm_charts" {
-  description = "Helm Charts"
-  type = map(object({
-    name       = string
-    repository = string
-    chart      = string
-    namespace  = string
-    version    = string
-    set = list(object({
-      name  = string
-      value = string
-    }))
-  }))
-}
 
 variable "node_groups" {
   type = map(object({
@@ -152,5 +138,16 @@ variable "keda_version" {
   type        = string
   description = "Version of KEDA to deploy"
   default     = "2.16.0"
+}
 
+variable "metrics_server_version" {
+  type        = string
+  description = "Version of the Metrics Server Helm chart to use"
+  default     = "7.2.16"
+}
+
+variable "prometheus_version" {
+  type        = string
+  description = "Version of the Prometheus Helm chart to use"
+  default     = "69.3.2"
 }

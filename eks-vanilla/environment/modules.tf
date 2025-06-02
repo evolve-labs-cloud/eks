@@ -53,11 +53,18 @@ module "karpenter" {
   ]
 }
 
-module "helm" {
-  depends_on = [module.eks, module.karpenter]
-  source     = "../modules/helm"
+module "metrics" {
 
-  helm_charts = var.helm_charts
+  source = "../modules/metrics"
+
+  providers = {
+    kubectl = kubectl
+  }
+
+  metrics_server_version = var.metrics_server_version
+  prometheus_version     = var.prometheus_version
+
+  depends_on = [module.eks, module.karpenter]
 }
 
 module "istio" {
@@ -70,8 +77,7 @@ module "istio" {
   istio_cpu_threshold = var.istio_cpu_threshold
   istio_min_replicas  = var.istio_min_replicas
   istio_max_replicas  = var.istio_max_replicas
-  # target_group_arn    = module.lb.target_group_arn
-  dns_zone_name = var.dns_zone_name
+  dns_zone_name       = var.dns_zone_name
 
 
   depends_on = [module.eks, module.karpenter]
@@ -102,7 +108,7 @@ module "external_secrets" {
 
   prefix = var.prefix
 
-  depends_on = [module.eks, module.istio]
+  depends_on = [module.eks, module.istio, module.lb]
 }
 
 module "keda" {
