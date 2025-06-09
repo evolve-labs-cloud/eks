@@ -1,0 +1,180 @@
+app:
+  name: green-app
+  namespace: blue-green-ns
+  image:
+    repository: public.ecr.aws/e1x6y8e1/green
+    tag: latest
+    pullPolicy: IfNotPresent
+  createNamespace: true
+  iamRoleArn: ""
+
+#capacity config
+  capacity:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    autoscaling:
+      min: 1
+      max: 5
+      targetCPUUtilizationPercentage: 60
+
+    nodepool:
+      enabled: true
+      name: general
+
+#envs config
+  envs:
+    - name: github_token
+      valueFrom:
+      secretKeyRef:
+        name: green-secret
+        key: github_token
+          
+    - name: teste
+      valueFrom:
+      secretKeyRef:
+        name: green-secret
+        key: teste
+
+#Probes Config
+  probes:
+    startupProbe:
+      enabled: true
+      failureThreshold: 10
+      periodSeconds: 10
+      httpGet:
+        path: /
+        port: 80
+    readinessProbe:
+      enabled: true
+      failureThreshold: 10
+      periodSeconds: 10
+      httpGet:
+        path: /
+        port: 80    
+    livenessProbe:
+      enabled: true
+      failureThreshold: 10
+      periodSeconds: 10
+      httpGet:
+        path: /
+        port: 80
+
+#KEDA config
+  keda: 
+      enabled: true
+
+      hpaConfig:
+        behavior:
+          scaleDown:
+            stabilizationWindowSeconds: 20
+          scaleUp:
+            stabilizationWindowSeconds: 20
+        cooldownPeriod: 30
+        pollingInterval: 10
+
+      prometheus:
+      # - name: keda-scale-tps
+      #   metricName: istio_requests_total
+      #   query: "sum(rate(istio_requests_total{destination_service_name=\"linuxtips\"}[1m]))"
+      #   serverAddress: http://prometheus-kube-prometheus-prometheus.prometheus.svc.cluster.local:9090
+      #   threshold: "10"
+
+      cron:
+      # - name: scale-up
+      #   start: 40 14 * * *       
+      #   end: 40 18 * * *         
+      #   timezone: "America/Sao_Paulo"
+      #   desiredReplicas: 20
+
+      memory:
+      # - name: memory-high
+      #   metricType: Utilization
+      #   threshold: 60
+
+      sqs:
+      # - name: queue-high
+      #   metricType: Utilization
+      #   awsRegion: us-east-1
+      #   queueURL: https://sqs.us-east-1.amazonaws.com/123456789012/MyQueue
+      #   queueLength: 50
+
+      cpu:
+      - name: cpu-high
+        metricType: Utilization
+        threshold: 60
+
+#Istio Virutal Service
+  virtualService:
+      enabled: true
+      http:
+        enabled: true
+        port: 80
+        retries:
+          attempts: 1
+          perTryTimeout: 2s
+          retryOn: 5xx
+    
+
+#rollout config
+  rollout:
+    revisionHistoryLimit: 3
+    version: v1
+    strategy:
+      canary:
+        enabled: true
+        steps:
+          - setWeight: 25
+          - pause: { duration: 30s }
+          - analysis:
+              templates:
+                - templateName: istio-success 
+          - setWeight: 50
+          - pause: { duration: 30s }
+          - setWeight: 75
+          - pause: { duration: 30s }
+          - setWeight: 100 
+    
+      analysisTemplates:
+      - name: 'istio-success'
+        spec:
+          metrics:
+          - name: success-rate
+            interval: 2m
+            failureLimit: 0
+            successCondition: result[0] >= 0.95
+            count: 1
+            provider:
+              prometheus:
+                address: http://prometheus-kube-prometheus-prometheus.prometheus.svc.cluster.local:9090
+                query: |
+                  sum(irate(
+                    istio_requests_total{destination_service=~"green-app.blue-green-ns.svc.cluster.local",response_code!~"5.*"}[1m]
+                  )) /
+                  sum(irate(
+                    istio_requests_total{destination_service=~"green-app.blue-green-ns.svc.cluster.local"}[1m]
+                  ))
+  
+        
+#service config
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 443
+
+
+#Services Config
+  prometheus:
+      serviceMonitor:
+        enabled: false
+        interval: 30s
+        scrapeTimeout: 10s
+        port: http
+        path: /metrics
